@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "219750439775",
+    "project_id": "digitalrec-c2684",
+    "storage_bucket": "digitalrec-c2684.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219750439775:android:c3d793a5802f160919b4ea",
+        "android_client_info": {
+          "package_name": "com.supervision.tecnica"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "219750439775-90c8jsg7qkrur5jp6lgj4kspqpv1202k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZHFy2rVxIzqWShsIU3R9VarK194nLxzo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "219750439775-90c8jsg7qkrur5jp6lgj4kspqpv1202k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
