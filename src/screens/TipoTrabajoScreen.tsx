@@ -43,17 +43,18 @@ export const TipoTrabajoScreen = ({ navigation, route }: Props) => {
     }, []);
 
     const getInitialData = () => {
-        getOrdenTrabajo();
-        getTipoTrabajo();
+        getOrdenTrabajo().then(() => {
+            getTipoTrabajo();
+        });
     }
 
-    const getOrdenTrabajo = () => {        
-        setIsLoading(true);        
-        let response = getOneWorkOrder(route.params.ordenTrabajo);    
-        response.then((resp: any) => {            
+    const getOrdenTrabajo = () => {
+        setIsLoading(true);
+        let response = getOneWorkOrder(route.params.ordenTrabajo);
+        return response.then((resp: any) => {
             setInformation2(resp.data.ordentrabajoDB[0]);
         }).catch((exception: any) => {
-            showAlertError(exception.response.data.err.message);  
+            showAlertError(exception.response.data.err.message);
         });
     }
 
@@ -232,24 +233,43 @@ export const TipoTrabajoScreen = ({ navigation, route }: Props) => {
                         </View>                   
                     }
                     ListFooterComponent={
-                        <View style={ listStyle.buttonContainer }>                            
-                            {
-                            (information2.firmaUsuario)
-                            ? 
-                            <View style={ listStyle.containerImage }>
-                                <Text style={ listStyle.title2 }>Firma digital</Text>                                                   
-                                <Image 
-                                    source={{ uri: `${ settings.baseURL }${ settings.uploadSignatureImage }${ information2.firmaUsuario }` + '?' + new Date() }} 
-                                    style={ listStyle.imageView }
-                                />
+                        <View style={ listStyle.buttonContainer }>
+                            <View>                                
+                                <Text style={ listStyle.title2 }>Firma digital</Text>                          
+                                {
+                                (information2.firmaUsuario)
+                                ? 
+                                <View style={ listStyle.containerImage }>                                                                                  
+                                    <Image 
+                                        source={{ uri: `${ settings.baseURL }${ settings.uploadSignatureImage }${ information2.firmaUsuario }` + '?' + new Date() }} 
+                                        style={ listStyle.imageView }
+                                    />
+                                </View>
+                                :
+                                <TouchableOpacity onPress={ goSignature }>
+                                    <Icon
+                                        raised
+                                        name='pencil'
+                                        size={ 18 }
+                                        type='font-awesome'
+                                        color={ '#E86267' }
+                                    />
+                                </TouchableOpacity>                  
+                                }
                             </View>
-                            :
-                            <Button 
-                                title='Firma digital'
-                                buttonStyle={{ backgroundColor: colors.backgroundColor4 }}
-                                onPress={ goSignature } 
-                            />
-                            }                            
+                            <View style={{ marginVertical: 16 }}>
+                                <View style={{ marginBottom: 6 }}>
+                                    <Text style={ listStyle.title }>CAMPOS ADICIONALES DE LA ORDEN</Text>
+                                </View>                    
+                                {information2.extraFieldsData && information2.extraFieldsData.map((item: any, index: any) => (
+                                    <View key={index}>
+                                        <Text style={listStyle.title2}>
+                                            {item.field}:
+                                        </Text>
+                                        <Text style={listStyle.text}>{item.value}</Text>
+                                    </View>
+                                ))}
+                            </View>                       
                         </View>
                     }
                 />                       

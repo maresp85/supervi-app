@@ -338,7 +338,7 @@ export const LegalizacionScreen = ({ navigation, route }: Props) => {
                                 </View>
                                 <View style={ listStyle.buttonContainer }>
                                     <Button 
-                                        title='Firma digital'
+                                        title='Legalización'
                                         buttonStyle={{ backgroundColor: colors.backgroundColor4 }}
                                         onPress={ tipoLegalizacion } 
                                     />

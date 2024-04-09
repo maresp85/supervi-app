@@ -44,7 +44,6 @@ export const OrdenesScreen = ({ navigation }: Props) => {
     const [information, setInformation] = useState([]); 
     const [textInputs, setTextInputs] = useState([]);
     const [textInputsCopy, setTextInputsCopy] = useState([]);
-    const [extraFields, setExtraFields] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [isInternetReachable, setIsInternetReachable] = useState(true);
     const [ordenTrabajo, setOrdenTrabajo] = useState({});
@@ -134,13 +133,15 @@ export const OrdenesScreen = ({ navigation }: Props) => {
     }
 
     const checkEmptyTextInputs  = async () => {
-        let emptyFieldFound = false;
+        let emptyFieldFound: boolean = false;        
         await Promise.all(textInputs.map(async (value, index) => {
           if (value === "" || textInputsCopy[index] === value) {
             emptyFieldFound = true;         
-            showAlertError(`El campo en la posición ${textInputsCopy[index]} es obligatorio.`);
+            showAlertError(`El campo ${textInputsCopy[index]} es obligatorio.`);
+          } else {
+            
           }
-        }));
+        }));      
         if (emptyFieldFound) {
           return true;
         } else {
@@ -154,10 +155,17 @@ export const OrdenesScreen = ({ navigation }: Props) => {
             return;
         }
 
+        let textInputsExtra: any = [];
+        textInputs.map(async (value, index) => {
+            textInputsExtra.push({
+                'field': textInputsCopy[index],
+                'value': value,
+            });
+        });
         setIsLoading(true);
-        let response = updateExtraFields(ordenTrabajo._id, textInputs);
+        let response = updateExtraFields(ordenTrabajo._id, textInputsExtra);
         response.then((resp: any) => {
-            setIsLoading(true);
+            setIsLoading(false);
             Alert.alert(
                 'Datos enviados correctamente',
                 '',
@@ -217,8 +225,8 @@ export const OrdenesScreen = ({ navigation }: Props) => {
                 <View>
                     <Text style={ listStyle.title }>DIGITE LOS SIGUIENTES CAMPOS</Text>
                     <View style={{marginTop: 8}}>            
-                        {textInputs.map((value, index) => (
-                            <View>
+                        {textInputs.map((value: any, index: any) => (
+                            <View key={index}>
                                 <Text style={ listStyle.title }>{textInputsCopy[index]}</Text>
                                 <TextInput
                                     key={index.toString()}
@@ -251,7 +259,8 @@ export const OrdenesScreen = ({ navigation }: Props) => {
                     }          
                     renderItem={ ({ item }) =>
                     <TouchableOpacity 
-                        onPress={ ()=>{ goTo(item) } 
+                        onPress={ 
+                            ()=>{ goTo(item) } 
                         }
                     >                        
                         <View style={ listStyle.item }>

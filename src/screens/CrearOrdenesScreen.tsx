@@ -41,7 +41,6 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
     const [obraSelected, setObraSelected] = useState('');
     const [observaciones, setObservaciones] = useState('');
     const [refreshing, setRefreshing] = useState(false);
-    const [_id, set_Id] = useState('');
         
     useEffect(() => {
         getInitialData();    
@@ -79,12 +78,12 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
 
     const enviarOrden = () => {       
         if (trabajoSelected == null || trabajoSelected == '') {
-            ToastAndroid.show('Seleccione un Trabajo', ToastAndroid.LONG);
+            ToastAndroid.show('Seleccione un trabajo', ToastAndroid.LONG);
             return;
         }
 
         if (obraSelected == null || obraSelected == '') {
-            ToastAndroid.show('Seleccione una Obra', ToastAndroid.LONG);
+            ToastAndroid.show('Seleccione un aliado', ToastAndroid.LONG);
             return;
         }
 
@@ -110,36 +109,6 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
                 );
                 goHome(); 
             }              
-        }).catch((err: any) => {
-            setIsLoading(false);
-            Alert.alert(err.response.data.err.errmsg);   
-        });
-    }
-
-    const enviarHermeticidad = () => {
-        if (obraSelected == null || obraSelected == '') {
-            ToastAndroid.show('Seleccione una Obra', ToastAndroid.LONG);
-            return;
-        }
-
-        setIsLoading(true);
-        let response = postHermeticidad(
-            user?.empresa,
-            obraSelected,
-            user?._id,
-        );
-        response.then((resp: any) => {
-            setIsLoading(false);
-            if (resp.data.ok == true) {
-                setObraSelected('');
-                showFlashMessage(
-                    'success',
-                    'Reporte de Hermeticidad generado correctamente.',
-                    '',
-                    3500
-                );
-                goHome();       
-            }       
         }).catch((err: any) => {
             setIsLoading(false);
             Alert.alert(err.response.data.err.errmsg);   
@@ -203,7 +172,7 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
                             setTrabajoSelected(itemValue)
                         }
                     >
-                        <Picker.Item label='Seleccione un Tipo de Trabajo' value='' />
+                        <Picker.Item label='Seleccione un tipo de trabajo' value='' />
                         { renderTrabajo() }
                     </Picker>
                     <Picker
@@ -213,7 +182,7 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
                             setObraSelected(itemValue)
                         }
                     >
-                        <Picker.Item label='Seleccione una Obra' value='' />
+                        <Picker.Item label='Seleccione un aliado' value='' />
                         { renderObra() }
                     </Picker>
                     <View style={{ padding: 4 }}>
@@ -233,15 +202,7 @@ export const CrearOrdenesScreen = ({ navigation }: Props) => {
                             title='GENERAR ORDEN DE TRABAJO'
                             onPress={ enviarOrden } 
                         />
-                    </View>
-                    <View style={{ marginTop: 2, padding: 4 } }>
-                        <Button 
-                            buttonStyle={{ backgroundColor: colors.primaryColor }}
-                            titleStyle={{ color: 'black' }}
-                            title='GENERAR REPORTE HERMETICIDAD'
-                            onPress={ enviarHermeticidad } 
-                        />
-                    </View>              
+                    </View>           
                 </View>
                 ) : (
                     <ActivityIndicator style={{ marginTop: 10 }} size='large' color={colors.backgroundColor4} />

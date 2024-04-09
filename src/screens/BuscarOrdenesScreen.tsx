@@ -9,7 +9,7 @@ import {
     buscarOrdenes, 
     getTrabajo, 
     getObraUsuario, 
-    updateVigaOrder 
+    updateExtraFields, 
 } from '../api/adminApi';
 
 import { 
@@ -48,12 +48,11 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
     const [isLoading, setIsLoading] = useState(false); 
     const [isVisibleOverlay, setIsVisibleOverlay] = useState(false); 
     const [isVisible, setIsVisible] = useState(false);
-    const [idViga, setIdViga] = useState('');
-    const [titleViga, setTitleViga] = useState('');
+    const [textInputs, setTextInputs] = useState([]);
+    const [textInputsCopy, setTextInputsCopy] = useState([]);
+    const [ordenTrabajo, setOrdenTrabajo] = useState({});
     const [dataConteo, setDataConteo] = useState(0);
-    const [identificacion, setIdentificacion] = useState('');
-    const [_id, set_Id] = useState();
-    const [id, setId] = useState();
+    const [id, setId] = useState('');
     const [information, setInformation] = useState([]);
     const [informationTrabajo, setInformationTrabajo] = useState([]);
     const [informationObra, setInformationObra] = useState([]);
@@ -113,13 +112,12 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
             id,
             user?._id,
             estadoSelected,
-            identificacion,
             trabajoSelected,
             obraSelected,
             valueFecha,
         );
 
-        setIdentificacion('');       
+        setId('');       
         setValueFecha('');   
         setTrabajoSelected('');
         setObraSelected('');
@@ -139,59 +137,99 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
         });
     }
 
-    const goTo = (_id: any, id: any, viga: any, fechaMejora: any, bitacora: any) => {
-        if (bitacora) {
-            navigation.push('MyPages', { 
-                screen: 'TipoTrabajoScreen', 
-                params: { 
-                    'ordenTrabajo': _id,
-                    'ordenTrabajoId': id,
-                },
-            });
+    const goTo = (ordenTrabajo: any) => {
+        setOrdenTrabajo(ordenTrabajo);
+        if (ordenTrabajo.bitacora) {
+            goToTipoTrabajo(ordenTrabajo._id, ordenTrabajo.id);
             return;            
         }
-        setId(id);
-        set_Id(_id);
-        setTitleViga('DIGITE EL N° DE IDENTIFICACIÓN');
-        if (fechaMejora) {
-            setTitleViga('DIGITE EL N° DE APTO');
-        }
-        if (viga == 'NO') {
+        
+        console.log(ordenTrabajo.extraFields.length > 0 && ordenTrabajo.extraFieldsData.length === 0)
+        if (ordenTrabajo.extraFields.length > 0 && ordenTrabajo.extraFieldsData.length === 0) {
+            setTextInputs(ordenTrabajo.extraFields);
+            setTextInputsCopy(ordenTrabajo.extraFields);
             toggleOverlay();
         } else {
-            setIdViga('');            
-            navigation.push('MyPages', { 
-                screen: 'TipoTrabajoScreen', 
-                params: { 
-                    'ordenTrabajo': _id,
-                    'ordenTrabajoId': id,
-                },
-            });
+            goToTipoTrabajo(ordenTrabajo._id, ordenTrabajo.id);
         }
     }
 
-    const updateViga = () => {   
+    const goToTipoTrabajo = (_id: any, id: any) => {
+        navigation.push('MyPages', { 
+            screen: 'TipoTrabajoScreen', 
+            params: { 
+                'ordenTrabajo': _id,
+                'ordenTrabajoId': id,
+            },
+        });
+    }
+
+    const checkEmptyTextInputs  = async () => {
+        let emptyFieldFound: boolean = false;        
+        await Promise.all(textInputs.map(async (value, index) => {
+          if (value === "" || textInputsCopy[index] === value) {
+            emptyFieldFound = true;         
+            showAlertError(`El campo ${textInputsCopy[index]} es obligatorio.`);
+          } else {
+            
+          }
+        }));      
+        if (emptyFieldFound) {
+          return true;
+        } else {
+          return false;
+        }
+    }; 
+
+    const sendExtraFields = async () => {
         toggleOverlay();
-        setIsLoading(true);
-        let response = updateVigaOrder(_id, idViga);
-        response.then((resp: any) => {
-            setIdViga('');
-            navigation.push('MyPages', { 
-                screen: 'TipoTrabajoScreen', 
-                params: { 
-                    'ordenTrabajo': _id,
-                    'ordenTrabajoId': id,
-                }, 
+        if (await checkEmptyTextInputs()) {
+            return;
+        }
+
+        let textInputsExtra: any = [];
+        textInputs.map(async (value, index) => {
+            textInputsExtra.push({
+                'field': textInputsCopy[index],
+                'value': value,
             });
+        });
+        setIsLoading(true);
+        let response = updateExtraFields(ordenTrabajo._id, textInputsExtra);
+        response.then((resp: any) => {
+            setIsLoading(false);
+            Alert.alert(
+                'Datos enviados correctamente',
+                '',
+                [     
+                    {
+                        text: 'OK', 
+                        onPress: () => goToTipoTrabajo(ordenTrabajo._id, ordenTrabajo.id)
+                    }
+                ],
+                    { cancelable: false },
+                );            
         }).catch((err: any) => {
             setIsLoading(false);
             Alert.alert('Ocurrió un error, contacte al Administrador');
         });
-    };   
+    };    
 
     const toggleOverlay = () => {
         setIsVisibleOverlay(!isVisibleOverlay);
     };
+
+    const handleInputChange = (text: any, index: any) => {
+        const newInputs: any = [...textInputs];
+        newInputs[index] = text;
+        setTextInputs(newInputs);
+    };
+
+    const handleInputFocus = (index: any) => {
+        const newInputs: any = [...textInputs];
+        newInputs[index] = '';
+        setTextInputs(newInputs);
+    }; 
 
     const buscarAvanzado = () => {
         setIsVisible(false);
@@ -245,23 +283,32 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
 
             <Overlay isVisible={ isVisibleOverlay } onBackdropPress={ toggleOverlay }>
                 <View>
-                    <Text style={ listStyle.title }>{ titleViga }</Text>
-                    <TextInput 
-                        style={ listStyle.inputField } 
-                        underlineColorAndroid='rgba(0,0,0,0)' 
-                        onChangeText={ (value) => setIdViga(value) }
-                        value={ idViga } 
-                        placeholderTextColor="#4b4b56" 
-                    />   
+                    <Text style={ listStyle.title }>DIGITE LOS SIGUIENTES CAMPOS</Text>
+                    <View style={{marginTop: 8}}>            
+                        {textInputs.map((value: any, index: any) => (
+                            <View key={index}>
+                                <Text style={ listStyle.title }>{textInputsCopy[index]}</Text>
+                                <TextInput
+                                    key={index.toString()}
+                                    placeholder={value}
+                                    onChangeText={(text) => handleInputChange(text, index)}
+                                    onFocus={() => handleInputFocus(index)}
+                                    style={ listStyle.textInput }
+                                    value={value}
+                                    editable={true}
+                                />
+                            </View>
+                        ))}
+                    </View>
                     <View style={{ marginTop: 8 } }>
                         <Button 
                             title='Enviar'
                             buttonStyle={{ backgroundColor: colors.backgroundColor4 }}
-                            onPress={ updateViga } 
+                            onPress={ sendExtraFields } 
                         />
                     </View>
                 </View>
-            </Overlay>
+            </Overlay>  
 
             <View>
                 {
@@ -280,10 +327,10 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
                 <TextInput 
                     style={ listStyle.inputField } 
                     underlineColorAndroid='rgba(0,0,0,0)' 
-                    placeholder='Digite el N° identificación'
-                    onChangeText={ (identificacion) => setIdentificacion(identificacion) }
+                    placeholder='Digite el ID'
+                    onChangeText={ (id) => setId(id) }
                     onSubmitEditing={ buscarAvanzado }
-                    value={ identificacion } 
+                    value={ id } 
                     placeholderTextColor='#4b4b56'
                 /> 
             </View>   
@@ -304,7 +351,7 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
                     setObraSelected(itemValue)
                 }
             >
-                <Picker.Item label='Seleccione una Obra' value='' />
+                <Picker.Item label='Seleccione un aliado' value='' />
                 { renderObra() }
             </Picker>
             <Picker
@@ -314,7 +361,7 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
                     setEstadoSelected(itemValue)
                 }
             >
-                <Picker.Item label='Seleccione un Estado' value='' />
+                <Picker.Item label='Seleccione un estado' value='' />
                 { renderEstado() }
             </Picker>
 
@@ -368,13 +415,8 @@ export const BuscarOrdenesScreen = ({ navigation }: Props) => {
                         data={ information }      
                         renderItem={ ({ item }) =>
                         <TouchableOpacity 
-                            onPress={ ()=>{ goTo(
-                                item._id, 
-                                item.id, 
-                                item.idviga, 
-                                item.trabajo.fechaMejora, 
-                                item.trabajo.bitacora
-                            ) } 
+                            onPress={ 
+                                ()=>{ goTo(item) } 
                             }
                         >                           
                             <View style={ listStyle.item }>

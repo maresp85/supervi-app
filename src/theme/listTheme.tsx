@@ -195,8 +195,9 @@ export const listStyle = StyleSheet.create({
         textAlign: "center",
     },
     buttonContainer: {
+       marginBottom: 8,
        marginTop: 8, 
-       paddingHorizontal: 8
+       paddingHorizontal: 8,
     },
     imageContainer: {  
         marginBottom: 4,       
